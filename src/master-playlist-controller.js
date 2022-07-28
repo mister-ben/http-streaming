@@ -979,14 +979,30 @@ export class MasterPlaylistController extends videojs.EventTarget {
       return false;
     }
 
-    // when the video is a live stream
-    if (!media.endList) {
+    // when the video is a live stream and/or has a start time
+    if (!media.endList || media.start) {
       const seekable = this.seekable();
 
       if (!seekable.length) {
-        // without a seekable range, the player cannot seek to begin buffering at the live
-        // point
+        // Without a seekable range, the player cannot seek
         return false;
+      }
+
+      const seekableEnd = seekable.end(0);
+
+      let startTime = seekableEnd;
+
+      if (media.start) {
+        const offset = media.start.timeOffset;
+
+        if (offset < 0) {
+          startTime += offset;
+        } else {
+          startTime = offset;
+        }
+
+        // Cap to within the seekable range
+        startTime = Math.max(seekable.start(0), Math.min(seekableEnd, startTime));
       }
 
       if (videojs.browser.IE_VERSION &&
@@ -995,7 +1011,7 @@ export class MasterPlaylistController extends videojs.EventTarget {
         // readyState is 0, so it must be delayed until the tech fires loadedmetadata.
         this.tech_.one('loadedmetadata', () => {
           this.trigger('firstplay');
-          this.tech_.setCurrentTime(seekable.end(0));
+          this.tech_.setCurrentTime(startTime);
           this.hasPlayed_ = true;
         });
 
@@ -1004,8 +1020,8 @@ export class MasterPlaylistController extends videojs.EventTarget {
 
       // trigger firstplay to inform the source handler to ignore the next seek event
       this.trigger('firstplay');
-      // seek to the live point
-      this.tech_.setCurrentTime(seekable.end(0));
+      // seek to the live/start point
+      this.tech_.setCurrentTime(startTime);
     }
 
     this.hasPlayed_ = true;
