@@ -578,7 +578,9 @@
           liveui: stateEls.liveui.checked,
           enableSourceset: mirrorSource,
           html5: {
+            xnativeTextTracks: true,
             vhs: {
+              useCueTags: true,
               overrideNative: getInputValue(stateEls['override-native']),
               bufferBasedABR: getInputValue(stateEls['buffer-water']),
               llhls: getInputValue(stateEls.llhls),

@@ -236,7 +236,10 @@ export const createMetadataTrackIfNotExists = (inbandTextTracks, dispatchType, t
     label: 'Timed Metadata'
   }, false).track;
 
-  inbandTextTracks.metadataTrack_.inBandMetadataTrackDispatchType = dispatchType;
+  // Native tracks will have the property, and it is not writable
+  if (!tech.featuresNativeTextTracks) {
+    inbandTextTracks.metadataTrack_.inBandMetadataTrackDispatchType = dispatchType;
+  }
 };
 
 /**

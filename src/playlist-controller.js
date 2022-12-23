@@ -193,7 +193,11 @@ export class PlaylistController extends videojs.EventTarget {
         'metadata',
         'ad-cues'
       );
-      this.cueTagsTrack_.inBandMetadataTrackDispatchType = '';
+
+      // Native tracks will have the property, and it is not writable
+      if (!this.tech_.featuresNativeTextTracks) {
+        this.cueTagsTrack_.inBandMetadataTrackDispatchType = '';
+      }
     }
 
     this.requestOptions_ = {

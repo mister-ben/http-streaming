@@ -2733,6 +2733,53 @@ QUnit.test('respects useCueTags option', function(assert) {
   videojs.options.vhs = origVhsOptions;
 });
 
+QUnit.test('useCueTags option works with native tracks', function(assert) {
+  const origVhsOptions = videojs.options.vhs;
+  let vhsPlaylistCueTagsEvents = 0;
+
+  videojs.options.vhs = {
+    useCueTags: true
+  };
+
+  this.requests.length = 0;
+  this.player.dispose();
+  debugger;
+  this.player = createPlayer({nativeTextTracks: true});
+  console.log(this.player.options_)
+  this.player.tech_.on('usage', (event) => {
+    if (event.name === 'vhs-playlist-cue-tags') {
+      vhsPlaylistCueTagsEvents++;
+    }
+  });
+  this.player.src({
+    src: 'manifest/media.m3u8',
+    type: 'application/vnd.apple.mpegurl'
+  });
+
+  this.clock.tick(1);
+
+  this.playlistController = this.player.tech_.vhs.playlistController_;
+  this.standardXHRResponse(this.requests.shift());
+  this.standardXHRResponse(this.requests.shift());
+
+  assert.equal(vhsPlaylistCueTagsEvents, 1, 'cue tags event has been triggered once');
+  assert.ok(
+    this.playlistController.cueTagsTrack_,
+    'creates cueTagsTrack_ if useCueTags is truthy'
+  );
+  assert.equal(
+    this.playlistController.cueTagsTrack_.label,
+    'ad-cues',
+    'cueTagsTrack_ has label of ad-cues'
+  );
+  assert.equal(
+    this.player.textTracks()[0], this.playlistController.cueTagsTrack_,
+    'adds cueTagsTrack as a text track if useCueTags is truthy'
+  );
+
+  videojs.options.vhs = origVhsOptions;
+});
+
 QUnit.test('correctly sets alternate audio track kinds', function(assert) {
   this.requests.length = 0;
   this.player.dispose();
