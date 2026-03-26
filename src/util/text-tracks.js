@@ -35,7 +35,9 @@ export const createCaptionsTrackIfNotExists = function(inbandTextTracks, tech, c
       // Manifest level caption services are handled in media-groups.js under CLOSED-CAPTIONS.
       const captionServices = tech.options_.vhs && tech.options_.vhs.captionServices || {};
       let label = captionStream;
-      let language = captionStream;
+      // Default to `und` (undetermined language) rather than an invalid BCP 47 language code
+      // (e.g. CC1), as Safari will show a warning. captionServices can overwrite this.
+      let language = 'und';
       let def = false;
       const captionService = captionServices[instreamId];
 
